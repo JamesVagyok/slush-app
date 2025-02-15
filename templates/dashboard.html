@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <style>
+    /* Dark background styling */
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #121212, #2c2c2c); /* Dark gradient */
+        color: white;
+        overflow: hidden;
+    }
+
+    /* Dashboard Container */
+    .dashboard-container {
+        width: 80%;
+        max-width: 1000px;
+        max-height: 90vh;
+        background: rgba(255, 255, 255, 0.1); /* Glass effect */
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+        text-align: center;
+        position: relative;
+        overflow-y: auto;
+    }
+
+    h2 {
+        margin-bottom: 15px;
+        color: #fff;
+    }
+
+    /* Buttons */
+    .dashboard-btn {
+        width: 95%;
+        background-color: #007bff;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 15px;
+        transition: background 0.3s;
+    }
+
+    .dashboard-btn:hover {
+        background-color: #0056b3;
+    }
+
+    /* File Upload Section */
+    .upload-section {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #444;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    input, select {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        border: 1px solid #444;
+        border-radius: 5px;
+        background: #222; /* Dark background */
+        color: white;
+    }
+
+    /* Ensure dropdown text remains visible */
+    select option {
+        background: #222; /* Dark dropdown */
+        color: white;
+    }
+
+    input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* File List */
+    .file-list {
+        margin-top: 20px;
+        border-top: 1px solid #444;
+        padding-top: 10px;
+        text-align: left;
+    }
+
+    .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 5px;
+    }
+
+    .file-item a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 600px) {
+        .dashboard-container {
+            width: 90%;
+            padding: 20px;
+        }
+    }
+
+    .edit-profile-btn {
+        background-color: #007bff; /* Blue color */
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s ease-in-out;
+        display: block;
+        width: 200px; /* Set width */
+        text-align: center;
+        margin: 20px auto; /* Center horizontally */
+    }
+
+    .edit-profile-btn:hover {
+        background-color: #0056b3; /* Darker blue */
+    }
+
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <h2>Welcome, {{ current_user.name }}! Please upload your files one after the other, clicking upload after every selection</h2>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h3>Upload Files</h3>
+            <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="files" multiple required>
+                <select name="file_type" required>
+                    <option value="" disabled selected>Select file type</option>
+                    <option value="Transcript">Transcript</option>
+                    <option value="ID Card">Passport ID</option>
+                    <option value="Scholarship Letter">Scholarship Award Letter</option>
+                    <option value="Other">Other</option>
+                </select>
+                <button type="submit" class="dashboard-btn">Upload</button>
+            </form>
+        </div>
+
+        <!-- File List -->
+        <div class="file-list">
+            <h3>Your Files</h3>
+            {% if files %}
+                {% for file in files %}
+                    <div class="file-item">
+                        <span>{{ file.filename }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No files uploaded yet.</p>
+            {% endif %}
+        </div>
+
+        <br>
+        <a href="{{ url_for('edit_profile') }}">
+            <button class="edit-profile-btn">Edit Profile</button>
+        </a>
+
+        <a href="{{ url_for('logout') }}" class="dashboard-btn">Logout</a>
+    </div>
+
+</body>
+</html>

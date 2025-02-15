@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .btn-download {
+            display: inline-block;
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #007bff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Admin Dashboard - User List</h2>
+
+    
+    <br><br>
+    
+    <a href="{{ url_for('download_users_excel') }}">
+        <button class="btn-download">Download Excel</button>
+    </a>
+    
+
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Date of Birth</th>
+            <th>University</th>
+            <th>City of Residence</th>
+            <th>Phone Number</th>
+            <th>Bank Name</th>
+            <th>Swift Code</th>
+            <th>IBAN</th>
+            <th>Passport Number</th>
+        </tr>
+        
+        {% for user, profile in users %}
+        <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ profile.date_of_birth }}</td>
+            <td>{{ profile.university }}</td>
+            <td>{{ profile.city_of_residence }}</td>
+            <td>{{ profile.phone_number }}</td>
+            <td>{{ profile.bank_name }}</td>
+            <td>{{ profile.bank_swift_code }}</td>
+            <td>{{ profile.bank_iban }}</td>
+            <td>{{ profile.passport_number }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+
+</body>
+</html>
+

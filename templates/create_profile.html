@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <style>
+        /* Dark gradient background */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #121212, #2c2c2c); /* Dark gradient */
+            color: white; /* Ensures readability */
+            overflow: hidden;
+        }
+
+        /* Profile Form Container */
+        .profile-container {
+            width: 400px;
+            max-height: 90vh;
+            background: rgba(255, 255, 255, 0.15); /* Transparent glass effect */
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        label {
+            width: 100%;
+            text-align: left;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #fff;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        button {
+            width: 95%;
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            .profile-container {
+                width: 90%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Profile Form -->
+    <div class="profile-container">
+        <h2>Create Profile</h2>
+        <form action="{{ url_for('create_profile') }}" method="POST">
+
+            <label for="date_of_birth">Date of Birth</label>
+            <input type="date" id="date_of_birth" name="date_of_birth" required>
+
+            <label for="university">University</label>
+            <input type="text" id="university" name="university" required>
+
+            <label for="city_of_residence">City of Residence</label>
+            <input type="text" id="city_of_residence" name="city_of_residence" required>
+
+            <label for="phone_number">Phone Number</label>
+            <input type="text" id="phone_number" name="phone_number" required>
+
+            <label for="bank_name">Bank Name</label>
+            <input type="text" id="bank_name" name="bank_name" required>
+
+            <label for="bank_swift_code">Bank SWIFT Code</label>
+            <input type="text" id="bank_swift_code" name="bank_swift_code" required>
+
+            <label for="bank_iban">Bank IBAN</label>
+            <input type="text" id="bank_iban" name="bank_iban" required>
+
+            <label for="passport_number">Passport Number</label>
+            <input type="text" id="passport_number" name="passport_number" required>
+
+            <button type="submit">Create Profile</button> 
+        </form>
+    </div>
+
+</body>
+</html>
