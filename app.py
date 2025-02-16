@@ -10,21 +10,67 @@ import time
 from flask import send_file
 import pandas as pd
 import logging
+import boto3
+import uuid
+from dotenv import load_dotenv
+
+
+
+# Explicitly load .env file
+load_dotenv(dotenv_path=".env", override=True)
+
+
 
 
 
 # Flask App Initialization
 app = Flask(__name__)
+
+
+
+
+
+#Load configurations
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:%28justJames%40Vagyok%29@localhost/slush_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 
-app.config['UPLOAD_FOLDER'] = 'uploads/'  # Define the upload folder
 
+
+
+
+# Ensure UPLOAD_FOLDER is defined before using it
+app.config['UPLOAD_FOLDER'] = "uploads"
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+
+
+
+
+S3_BUCKET=os.getenv("S3_BUCKET")
+S3_ACCESS_KEY=os.getenv("S3_ACCESS_KEY")
+S3_SECRET_KEY=os.getenv("S3_SECRET_KEY")
+S3_REGION=os.getenv("S3_REGION")
+
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=S3_ACCESS_KEY,
+    aws_secret_access_key=S3_SECRET_KEY,
+    region_name=S3_REGION
+)
+
+def upload_to_s3(file):
+    """Upload file to AWS S3 and return its URL."""
+    file.filename = f"{uuid.uuid4()}-{secure_filename(file.filename)}"  # Unique filename
+    s3.upload_fileobj(file, S3_BUCKET, file.filename)
+    return f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/{file.filename}"
+
+
+
+
+
+#Login configurations
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-
-# Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
 
@@ -121,15 +167,15 @@ def login():
         if user and user.check_password(password):
             login_user(user)
 
-            # ✅ If user is admin, send them directly to admin dashboard (skip profile check)
+            # If user is admin, send them directly to admin dashboard (skip profile check)
             if user.is_admin:
                 return redirect(url_for('admin_dashboard'))
 
-            # ✅ If user is NOT admin and has no profile, redirect to create profile
+            # If user is NOT admin and has no profile, redirect to create profile
             if not UserProfile.query.filter_by(user_id=user.id).first():
                 return redirect(url_for('create_profile'))
 
-            # ✅ Otherwise, send regular users to their dashboard
+            # Otherwise, send regular users to their dashboard
             return redirect(url_for('dashboard'))
 
         
@@ -229,7 +275,6 @@ def dashboard():
 
 
 
-# File Upload
 @app.route('/uploads', methods=['POST'])
 @login_required
 def upload_file():
@@ -244,17 +289,9 @@ def upload_file():
     if file_type not in allowed_types:
         flash("Invalid file category!", "danger")
         return redirect(url_for('dashboard'))
-    
-    # Ensure the user folder name is formatted correctly
-    
-    safe_username = secure_filename(current_user.name)
-    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], safe_username)
-    os.makedirs(user_folder, exist_ok=True)  # Ensure the directory exists
 
     for file in files:
         if file and allowed_file(file.filename):
-
-            # **File size check (Max: 5MB)**
             file.seek(0, os.SEEK_END)  # Move cursor to end of file
             file_size = file.tell()  # Get file size
             file.seek(0)  # Reset cursor
@@ -263,33 +300,24 @@ def upload_file():
                 flash(f"File {file.filename} exceeds the 5MB limit.", "danger")
                 continue  # Skip this file and move to the next one
 
-            unique_filename = f"{int(time.time())}_{secure_filename(file.filename)}"
-            file_path = os.path.join(user_folder, unique_filename)
-
             try:
-                file.save(file_path)  # Save file
+                file_url = upload_to_s3(file)  # Upload to AWS S3 and get URL
 
-
+                # Save file details to the database
+                new_document = Document(
+                    user_id=current_user.id,
+                    filename=file.filename,
+                    file_path=file_url,  # Store S3 URL instead of local path
+                    file_type=file_type
+                )
+                db.session.add(new_document)
             except Exception as e:
-                flash(f"Error saving file: {e}", "danger")
-                continue  # Instead of redirecting, just move to the next file
-
-            # Save file details to the database
-            new_document = Document(
-                user_id=current_user.id,
-                filename=unique_filename,
-                file_path=file_path,
-                file_type=file_type
-            )
-            db.session.add(new_document)
-        else:
-            flash(f"Invalid file type: {file.filename}", 'danger')
-            continue  # Skip this file and move to the next one
+                flash(f"Error uploading file to S3: {e}", "danger")
+                continue
 
     db.session.commit()
     flash("Files uploaded successfully!", "success")
     return redirect(url_for('dashboard'))
-
 
 
 
